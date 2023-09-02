@@ -23,6 +23,7 @@ class Song:
         """
 
         CURSOR.execute(sql)
+        CONN.commit()
 
     @classmethod
     def drop_table(cls):
@@ -31,6 +32,7 @@ class Song:
         """
 
         CURSOR.execute(sql)
+        CONN.commit()
 
     def save(self):
         sql = """
@@ -42,10 +44,30 @@ class Song:
 
         self.id = CURSOR.execute("SELECT last_insert_rowid() FROM songs").fetchone()[0]
 
+        CONN.commit()
+
     @classmethod
     def create(cls, name, album):
         song = Song(name, album)
         song.save()
         return song
+        CONN.commit()
+    
+    @classmethod
+    def new_from_db(cls, row):
+        song = cls(row[1], row[2])
+        song.id = row[0]
+    
+    @classmethod
+    def get_all(cls):
+        sql = """
+            SELECT *
+            FROM songs
+        """
+
+        all = CURSOR.execute(sql).fetchall()
+
+        cls.all = [cls.new_from_db(row) for row in all]
 
     # new code goes here!
+Song.create_table()
